@@ -5,17 +5,21 @@ $resolved = [IO.Path]::GetFullPath($installDir)
 if (-not [string]::Equals($resolved, $expected, [StringComparison]::OrdinalIgnoreCase)) {
     throw 'Ruta de desinstalación no válida.'
 }
+$exePath = Join-Path $resolved 'CoMa.exe'
+$running = @(Get-Process -Name CoMa -ErrorAction SilentlyContinue | Where-Object {
+    $_.Path -and [string]::Equals($_.Path, $exePath, [StringComparison]::OrdinalIgnoreCase)
+})
+if ($running.Count -gt 0) { throw 'Cierra CoMa antes de desinstalar.' }
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 if (Test-Path $runKey) {
     $current = (Get-ItemProperty -Path $runKey -Name CoMa -ErrorAction SilentlyContinue).CoMa
-    if ($current -eq ('"' + (Join-Path $resolved 'CoMa.exe') + '"')) {
+    if ($current -eq ('"' + $exePath + '"')) {
         Remove-ItemProperty -Path $runKey -Name CoMa
     }
 }
 $shortcutPath = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\CoMa.lnk'
 if (Test-Path -LiteralPath $shortcutPath) { Remove-Item -LiteralPath $shortcutPath -Force }
 if (Test-Path -LiteralPath $resolved) {
-    # El ejecutable puede estar abierto; ciérralo antes de desinstalar.
     Remove-Item -LiteralPath $resolved -Recurse -Force
 }
 Write-Output 'CoMa desinstalado. Los datos locales se conservan para una posible reinstalación.'

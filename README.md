@@ -4,7 +4,7 @@ CoMa reúne el correo no leído de la bandeja de entrada de Gmail, Outlook/Hotma
 
 ## Instalar sin administrador
 
-Descarga `CoMa-Windows.zip`, extráelo y ejecuta en PowerShell:
+Descarga `CoMa-Windows.zip` desde el artefacto de la última ejecución correcta de [Windows en GitHub Actions](https://github.com/Lord-physics/CoMa/actions/workflows/windows.yml) (requiere sesión en GitHub), extráelo y ejecuta en PowerShell:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\Install-CoMa.ps1

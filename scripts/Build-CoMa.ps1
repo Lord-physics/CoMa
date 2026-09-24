@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 Set-Location $root
 $python = Join-Path $root '.venv\Scripts\python.exe'
-if (-not (Test-Path -LiteralPath $python)) { py -m venv .venv }
+if (-not (Test-Path -LiteralPath $python)) { python -m venv .venv }
 & $python -m pip install --disable-pip-version-check -r requirements-build.txt
 if ($LASTEXITCODE -ne 0) { throw 'No se pudo instalar PyInstaller.' }
 & $python -m PyInstaller --noconfirm --clean --onefile --windowed --name CoMa main.py

@@ -1,0 +1,32 @@
+name: Windows
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Probar lógica local
+        run: python -m unittest discover -s tests -v
+      - name: Crear instalador
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-CoMa.ps1
+      - uses: actions/upload-artifact@v7
+        with:
+          name: CoMa-Windows
+          path: dist/CoMa-Windows.zip
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
