@@ -1,9 +1,11 @@
 """Ventana Tk; toda red y clasificación se ejecutan fuera del hilo gráfico."""
 
 import queue
+import sys
 import threading
 import tkinter as tk
 import webbrowser
+from pathlib import Path
 from tkinter import messagebox, ttk
 
 from .models import Message
@@ -13,6 +15,12 @@ from .startup import enabled as startup_enabled, set_enabled as set_startup
 
 PROVIDERS = {"Gmail": "gmail", "Outlook / Hotmail": "outlook", "Educacyl": "educacyl"}
 ACTIONS = (("Archivar", "archive"), ("Eliminar", "delete"), ("Spam", "spam"), ("Spam y borrar", "spam_delete"))
+
+
+def _asset_path(name: str) -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys._MEIPASS) / "coma" / "assets" / name
+    return Path(__file__).resolve().parent / "assets" / name
 
 
 class App(tk.Tk):
@@ -28,6 +36,8 @@ class App(tk.Tk):
         self.messages: list[Message] = []
         self.candidates: list[Message] = []
         self.candidate_window = None
+        self.logo_image = tk.PhotoImage(file=str(_asset_path("logo.png"))).subsample(24, 24)
+        self.iconphoto(True, self.logo_image)
         self._style()
         self._layout()
         self.after(100, self._drain_events)
@@ -44,6 +54,7 @@ class App(tk.Tk):
     def _layout(self):
         header = tk.Frame(self, bg="#f3f5f8")
         header.pack(fill="x", padx=20, pady=(18, 10))
+        tk.Label(header, image=self.logo_image, bg="#f3f5f8").pack(side="left", padx=(0, 9))
         tk.Label(header, text="CoMa", font=("Segoe UI", 23, "bold"), bg="#f3f5f8", fg="#17324d").pack(side="left")
         tk.Label(header, text="  Bandeja no leída", font=("Segoe UI", 12), bg="#f3f5f8", fg="#526476").pack(side="left", pady=(10, 0))
         ttk.Button(header, text="Añadir cuenta", command=self._add_dialog).pack(side="right", padx=(7, 0))
