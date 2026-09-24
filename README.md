@@ -39,4 +39,3 @@ El script crea `dist\CoMa-Windows.zip`, con `CoMa.exe` y el instalador. La aplic
 La conexión real depende de los IDs OAuth, del consentimiento de cada cuenta y de las políticas del tenant Educacyl. No hay credenciales incluidas en el repositorio. Los mensajes se descargan de nuevo al actualizar; el primer análisis de buzones grandes puede tardar. CoMa no ejecuta HTML ni adjuntos de mensajes.
 
 Documentación: [Gmail API](https://developers.google.com/workspace/gmail/api/reference/rest), [OAuth de escritorio de Google](https://developers.google.com/identity/protocols/oauth2/native-app), [Microsoft Graph](https://learn.microsoft.com/en-us/graph/api/user-list-messages?view=graph-rest-1.0), [código de dispositivo de Microsoft](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-device-code).
-
