@@ -4,7 +4,7 @@ import base64
 import email.header
 import urllib.parse
 
-from .http import request_json
+from .http import RemoteError, request_json
 from .models import Account, Message
 from .text import summarize
 
@@ -43,6 +43,10 @@ def _gmail_body(payload: dict) -> tuple[str, bool]:
 
     visit(payload)
     return ("\n".join(plain), False) if plain else ("\n".join(html), True)
+
+
+class PartialActionError(RemoteError):
+    """El mensaje ya se marcó como spam, pero no llegó a la papelera."""
 
 
 class Gmail:
@@ -90,7 +94,10 @@ class Gmail:
             request_json(base + "/modify", token=self.token, method="POST", data={"addLabelIds": ["SPAM"], "removeLabelIds": ["INBOX"]})
         elif action == "spam_delete":
             self.action(message, "spam")
-            self.action(message, "delete")
+            try:
+                self.action(message, "delete")
+            except RemoteError as exc:
+                raise PartialActionError(f"Marcado como spam, pero no se pudo mover a papelera: {exc}") from None
         else:
             raise ValueError(action)
 
@@ -135,7 +142,10 @@ class Microsoft:
     def action(self, message: Message, action: str) -> None:
         if action == "spam_delete":
             moved = self._move(message.id, "junkemail")
-            self._move(moved["id"], "deleteditems")
+            try:
+                self._move(moved["id"], "deleteditems")
+            except RemoteError as exc:
+                raise PartialActionError(f"Movido a spam, pero no a papelera: {exc}") from None
             return
         destination = {"archive": "archive", "delete": "deleteditems", "spam": "junkemail"}.get(action)
         if not destination:

@@ -6,7 +6,7 @@ from dataclasses import replace
 from .classifier import SpamClassifier
 from .models import Account, Message
 from .oauth import authorize, refresh
-from .providers import provider_for
+from .providers import PartialActionError, provider_for
 from .storage import AccountStore
 
 
@@ -48,9 +48,16 @@ class MailService:
         account = next((row for row in self.accounts.list() if row.id == message.account_id), None)
         if account is None:
             raise ValueError("La cuenta ya no existe.")
-        self._access(account).action(message, action)
-        if action in {"spam", "spam_delete"}:
+        try:
+            self._access(account).action(message, action)
+        except PartialActionError:
             self.classifier.learn(message.key, message.sender, message.subject, message.summary, spam=True)
+            raise
+        if action in {"spam", "spam_delete"}:
+            try:
+                self.classifier.learn(message.key, message.sender, message.subject, message.summary, spam=True)
+            except OSError:
+                raise RuntimeError("La acción se aplicó al correo, pero no se pudo guardar el aprendizaje local.") from None
 
     def not_spam(self, message: Message) -> None:
         self.classifier.learn(message.key, message.sender, message.subject, message.summary, spam=False)

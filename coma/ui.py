@@ -85,7 +85,7 @@ class App(tk.Tk):
             self.start_var.set(startup_enabled())
             messagebox.showerror("Inicio automático", str(exc), parent=self)
 
-    def _run(self, operation, completed, *, status: str):
+    def _run(self, operation, completed, *, status: str, refresh_on_error: bool = False):
         if self.busy:
             self.status_var.set("Espera a que termine la operación actual.")
             return
@@ -97,7 +97,7 @@ class App(tk.Tk):
                 value = operation()
                 self.events.put(("done", completed, value))
             except Exception as exc:
-                self.events.put(("error", str(exc)))
+                self.events.put(("error", str(exc), refresh_on_error))
 
         threading.Thread(target=worker, daemon=True).start()
 
@@ -113,6 +113,8 @@ class App(tk.Tk):
                 self.busy = False
                 self.status_var.set("La operación falló.")
                 messagebox.showerror("CoMa", event[1], parent=self)
+                if event[2]:
+                    self.refresh()
             else:
                 self.busy = False
                 event[1](event[2])
@@ -166,7 +168,8 @@ class App(tk.Tk):
         def completed(_):
             self.status_var.set("Acción aplicada en el proveedor.")
             self.refresh()
-        self._run(lambda: self.service.action(message, action), completed, status="Aplicando acción…")
+        self._run(lambda: self.service.action(message, action), completed,
+                  status="Aplicando acción…", refresh_on_error=True)
 
     def _mark_ham(self, message: Message):
         self.service.not_spam(message)

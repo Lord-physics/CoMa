@@ -18,17 +18,25 @@ class _TextOnly(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.chunks: list[str] = []
         self.hidden = 0
+        self.tags: list[tuple[str, bool]] = []
 
     def handle_starttag(self, tag, attrs):
-        if tag in {"script", "style", "head", "svg", "iframe"}:
-            self.hidden += 1
-        elif tag in {"p", "div", "br", "li", "tr"}:
+        classes = dict(attrs).get("class", "").lower()
+        suppress = tag in {"script", "style", "head", "svg", "iframe", "blockquote"} or any(
+            marker in classes for marker in ("gmail_quote", "yahoo_quoted", "gmail_signature"))
+        if tag not in {"br", "hr", "img", "input", "meta", "link"}:
+            self.tags.append((tag, suppress))
+        self.hidden += suppress
+        if not self.hidden and tag in {"p", "div", "br", "li", "tr"}:
             self.chunks.append("\n")
 
     def handle_endtag(self, tag):
-        if tag in {"script", "style", "head", "svg", "iframe"} and self.hidden:
-            self.hidden -= 1
-        elif tag in {"p", "div", "li", "tr"}:
+        matching = next((index for index in range(len(self.tags) - 1, -1, -1) if self.tags[index][0] == tag), None)
+        if matching is not None:
+            for _, suppressed in self.tags[matching:]:
+                self.hidden -= suppressed
+            del self.tags[matching:]
+        if not self.hidden and tag in {"p", "div", "li", "tr"}:
             self.chunks.append("\n")
 
     def handle_data(self, data):
