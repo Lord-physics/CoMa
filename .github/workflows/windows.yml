@@ -26,7 +26,8 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: CoMa-Windows
-          path: dist/CoMa-Windows.zip
+          path: dist/CoMa-Windows/
           if-no-files-found: error
           retention-days: 30
           compression-level: 0
+
