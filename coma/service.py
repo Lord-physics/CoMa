@@ -4,6 +4,7 @@ import uuid
 from dataclasses import replace
 
 from .classifier import SpamClassifier
+from .i18n import tr
 from .models import Account, Message
 from .oauth import authorize, refresh
 from .providers import PartialActionError, provider_for
@@ -19,7 +20,7 @@ class MailService:
         credentials = authorize(provider, client_id, tenant, client_secret, notify)
         refresh_token = credentials.get("refresh_token")
         if not refresh_token:
-            raise ValueError("El proveedor no entregó acceso renovable. Revisa el consentimiento y vuelve a intentarlo.")
+            raise ValueError(tr("refresh_missing"))
         temporary = Account(str(uuid.uuid4()), provider, "", client_id, tenant, client_secret, refresh_token)
         email = provider_for(temporary, credentials["access_token"]).identity()
         account = replace(temporary, email=email)
@@ -47,7 +48,7 @@ class MailService:
     def action(self, message: Message, action: str) -> None:
         account = next((row for row in self.accounts.list() if row.id == message.account_id), None)
         if account is None:
-            raise ValueError("La cuenta ya no existe.")
+            raise ValueError(tr("account_missing"))
         try:
             self._access(account).action(message, action)
         except PartialActionError:
@@ -57,7 +58,7 @@ class MailService:
             try:
                 self.classifier.learn(message.key, message.sender, message.subject, message.summary, spam=True)
             except OSError:
-                raise RuntimeError("La acción se aplicó al correo, pero no se pudo guardar el aprendizaje local.") from None
+                raise RuntimeError(tr("learning_failed")) from None
 
     def not_spam(self, message: Message) -> None:
         self.classifier.learn(message.key, message.sender, message.subject, message.summary, spam=False)

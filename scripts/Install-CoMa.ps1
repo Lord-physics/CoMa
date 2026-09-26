@@ -4,6 +4,11 @@ $sourceExe = Join-Path $PSScriptRoot 'CoMa.exe'
 if (-not (Test-Path -LiteralPath $sourceExe -PathType Leaf)) { throw 'Falta CoMa.exe junto al instalador.' }
 $installDir = Join-Path $env:LOCALAPPDATA 'Programs\CoMa'
 $exePath = Join-Path $installDir 'CoMa.exe'
+$isUpdate = Test-Path -LiteralPath $exePath -PathType Leaf
+$running = @(Get-Process -Name CoMa -ErrorAction SilentlyContinue | Where-Object {
+    $_.Path -and [string]::Equals($_.Path, $exePath, [StringComparison]::OrdinalIgnoreCase)
+})
+if ($running.Count -gt 0) { throw 'Cierra CoMa antes de instalar o actualizar.' }
 $uninstallSource = Join-Path $PSScriptRoot 'Uninstall-CoMa.ps1'
 New-Item -ItemType Directory -Path $installDir -Force | Out-Null
 Copy-Item -LiteralPath $sourceExe -Destination $exePath -Force
@@ -16,8 +21,10 @@ $shortcut.TargetPath = $exePath
 $shortcut.WorkingDirectory = $installDir
 $shortcut.Description = 'CoMa: correo no leído y posible spam'
 $shortcut.Save()
-$runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
-New-Item -Path $runKey -Force | Out-Null
-New-ItemProperty -Path $runKey -Name CoMa -PropertyType String -Value ('"' + $exePath + '"') -Force | Out-Null
-Write-Output "CoMa instalado para el usuario actual: $exePath"
+if (-not $isUpdate) {
+    $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+    New-Item -Path $runKey -Force | Out-Null
+    New-ItemProperty -Path $runKey -Name CoMa -PropertyType String -Value ('"' + $exePath + '"') -Force | Out-Null
+}
+Write-Output "CoMa instalado o actualizado para el usuario actual: $exePath"
 if (-not $NoLaunch) { Start-Process -FilePath $exePath }

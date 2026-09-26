@@ -11,6 +11,7 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from .http import RemoteError, post_form
+from .i18n import tr
 from .models import Account
 
 
@@ -30,7 +31,7 @@ def _google_authorize(client_id: str, client_secret: str, notify) -> dict:
             if query.get("state", [""])[0] == state:
                 received["code"] = query.get("code", [""])[0]
                 received["error"] = query.get("error", [""])[0]
-            body = "<html><body>CoMa: autorización recibida. Puedes cerrar esta pestaña.</body></html>"
+            body = "<html><body>" + tr("browser_callback") + "</body></html>"
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
@@ -54,7 +55,7 @@ def _google_authorize(client_id: str, client_secret: str, notify) -> dict:
         "state": state,
     }
     url = "https://accounts.google.com/o/oauth2/v2/auth?" + urllib.parse.urlencode(params)
-    notify("Completa el acceso de Google en el navegador.")
+    notify(tr("google_browser"))
     webbrowser.open(url)
     deadline = time.monotonic() + 180
     try:
@@ -63,7 +64,7 @@ def _google_authorize(client_id: str, client_secret: str, notify) -> dict:
     finally:
         server.server_close()
     if not received.get("code"):
-        raise RemoteError("No se completó la autorización de Google.")
+        raise RemoteError(tr("google_auth_failed"))
     fields = {"client_id": client_id, "code": received["code"], "code_verifier": verifier,
               "grant_type": "authorization_code", "redirect_uri": redirect}
     if client_secret:
@@ -80,8 +81,8 @@ def _microsoft_authorize(client_id: str, tenant: str, notify) -> dict:
             import json
             device = json.load(response)
     except Exception:
-        raise RemoteError("No se pudo iniciar el acceso de Microsoft. Revisa el identificador de aplicación.") from None
-    notify(f"Abre {device['verification_uri']} e introduce: {device['user_code']}")
+        raise RemoteError(tr("microsoft_start_failed")) from None
+    notify(tr("microsoft_device", url=device["verification_uri"], code=device["user_code"]))
     webbrowser.open(device["verification_uri"])
     deadline = time.monotonic() + int(device.get("expires_in", 900))
     interval = max(5, int(device.get("interval", 5)))
@@ -100,8 +101,8 @@ def _microsoft_authorize(client_id: str, tenant: str, notify) -> dict:
             if error == "slow_down":
                 interval += 5
                 continue
-            raise RemoteError(f"Microsoft rechazó el acceso ({error or exc.code}).") from None
-    raise RemoteError("Caducó el código de acceso de Microsoft.")
+            raise RemoteError(tr("microsoft_rejected", error=error or exc.code)) from None
+    raise RemoteError(tr("microsoft_expired"))
 
 
 def authorize(provider: str, client_id: str, tenant: str, client_secret: str, notify) -> dict:

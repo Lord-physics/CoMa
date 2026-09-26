@@ -5,6 +5,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+from .i18n import tr
+
 
 class RemoteError(RuntimeError):
     pass
@@ -24,9 +26,9 @@ def request_json(url: str, *, token: str | None = None, method: str = "GET", dat
             raw = response.read()
             return json.loads(raw) if raw else {}
     except urllib.error.HTTPError as exc:
-        raise RemoteError(f"El servicio devolvió HTTP {exc.code}.") from None
+        raise RemoteError(tr("http_service", code=exc.code)) from None
     except urllib.error.URLError:
-        raise RemoteError("No se pudo conectar con el servicio de correo.") from None
+        raise RemoteError(tr("http_mail_connect")) from None
 
 
 def post_form(url: str, fields: dict) -> dict:
@@ -37,6 +39,6 @@ def post_form(url: str, fields: dict) -> dict:
             return json.load(response)
     except urllib.error.HTTPError as exc:
         # Un error de OAuth se traduce a un código breve sin registrar la respuesta.
-        raise RemoteError(f"Autenticación rechazada (HTTP {exc.code}).") from None
+        raise RemoteError(tr("http_auth", code=exc.code)) from None
     except urllib.error.URLError:
-        raise RemoteError("No se pudo conectar con el servicio de autenticación.") from None
+        raise RemoteError(tr("http_auth_connect")) from None

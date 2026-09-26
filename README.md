@@ -14,9 +14,15 @@ powershell -ExecutionPolicy Bypass -File .\Install-CoMa.ps1
 
 CoMa installs in `%LOCALAPPDATA%\Programs\CoMa` and adds a Start menu shortcut. It starts automatically when the current user signs in; you can turn this off in the application. To uninstall, close CoMa and run `Uninstall-CoMa.ps1` from the installation folder. Account data and learning data remain in `%LOCALAPPDATA%\CoMa` so they can be reused after reinstalling.
 
+## Update manually
+
+Download `CoMa-Windows.zip` from the artifact of the latest **successful** [Windows GitHub Actions run](https://github.com/Lord-physics/CoMa/actions/workflows/windows.yml), extract it, close CoMa, and run `Install-CoMa.ps1` from the newly extracted folder as shown above. This replaces the application for your Windows user without administrator rights. Your accounts, spam learning, and current automatic-start setting are kept. Use the installer from the new download, not the copy in the installed folder.
+
 ## Add accounts
 
 Each provider requires an OAuth desktop application registration. CoMa **does not request or store your email password**. Enter the application's client ID under “Añadir cuenta” and complete authorization in your browser. You can add multiple accounts, including several from the same provider. Refresh tokens are encrypted with Windows DPAPI for the current user; message summaries are not stored on disk.
+
+Select **Help** in the Add account window for provider-specific steps to obtain the required IDs, Google client secret, Microsoft tenant, and API permissions. Use the **Language** selector in the main window to switch between English and Spanish; the choice is saved for later sessions.
 
 - **Gmail:** create a Google Cloud project, enable the Gmail API, configure the consent screen, and create a Desktop app OAuth client. Enter the client ID and client secret from the downloaded JSON file. If the app is in testing mode, add your account as a test user. CoMa requests `gmail.modify` to read, archive, mark as spam, and move messages to Trash.
 - **Outlook/Hotmail:** register an application in Microsoft Entra that supports personal and organizational accounts. Enable public client flows and grant the delegated `Mail.ReadWrite`, `User.Read`, and `offline_access` permissions. Enter the application ID. CoMa displays a code for signing in at `microsoft.com/devicelogin`.

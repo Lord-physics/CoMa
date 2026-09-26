@@ -5,6 +5,8 @@ import re
 from collections import Counter
 from html.parser import HTMLParser
 
+from .i18n import tr
+
 
 STOPWORDS = frozenset("de la el los las un una unos unas y o que en por para con del al a es se su sus como no si lo le ya the and to of in is for on with this that you your from it".split())
 QUOTE_MARKERS = re.compile(r"^(?:>|El .+ escribió:|On .+ wrote:|De:\s|From:\s|_{8,}|-{8,})", re.I)
@@ -63,7 +65,7 @@ def plain_text(content: str, is_html: bool = False) -> str:
 def summarize(content: str, *, is_html: bool = False, max_chars: int = 280) -> str:
     clean = plain_text(content, is_html)
     if not clean:
-        return "Sin texto para resumir."
+        return tr("summary_missing")
     sentences = [s.strip() for s in SENTENCES.split(clean) if s.strip()]
     unique = list(dict.fromkeys(sentences))
     if len(unique) <= 2:

@@ -5,6 +5,7 @@ import email.header
 import urllib.parse
 
 from .http import RemoteError, request_json
+from .i18n import tr
 from .models import Account, Message
 from .text import summarize
 
@@ -77,8 +78,8 @@ class Gmail:
                 thread = raw.get("threadId", "")
                 link = f"https://mail.google.com/mail/u/{_q(self.account.email)}/#all/{thread}" if thread else None
                 result.append(Message(self.account.id, self.account.email, "gmail", raw["id"],
-                                      _decode_header(headers.get("from", "Remitente desconocido")),
-                                      _decode_header(headers.get("subject", "(Sin asunto)")), summary, link,
+                                      _decode_header(headers.get("from", tr("sender_unknown"))),
+                                      _decode_header(headers.get("subject", tr("subject_missing"))), summary, link,
                                       raw.get("internalDate", "")))
             page = listing.get("nextPageToken")
             if not page:
@@ -97,7 +98,7 @@ class Gmail:
             try:
                 self.action(message, "delete")
             except RemoteError as exc:
-                raise PartialActionError(f"Marcado como spam, pero no se pudo mover a papelera: {exc}") from None
+                raise PartialActionError(tr("gmail_partial", error=exc)) from None
         else:
             raise ValueError(action)
 
@@ -132,11 +133,11 @@ class Microsoft:
                                     is_html=body.get("contentType", "").lower() == "html")
                 result.append(Message(self.account.id, self.account.email, self.account.provider, row["id"],
                                       f"{sender.get('name', '')} <{sender.get('address', '')}>".strip(),
-                                      row.get("subject") or "(Sin asunto)", summary, row.get("webLink"),
+                                      row.get("subject") or tr("subject_missing"), summary, row.get("webLink"),
                                       row.get("receivedDateTime", "")))
             url = page.get("@odata.nextLink")
             if url and not url.startswith(self.base + "/"):
-                raise ValueError("Paginación inesperada de Microsoft Graph")
+                raise ValueError(tr("graph_pagination"))
         return result
 
     def action(self, message: Message, action: str) -> None:
@@ -145,7 +146,7 @@ class Microsoft:
             try:
                 self._move(moved["id"], "deleteditems")
             except RemoteError as exc:
-                raise PartialActionError(f"Movido a spam, pero no a papelera: {exc}") from None
+                raise PartialActionError(tr("microsoft_partial", error=exc)) from None
             return
         destination = {"archive": "archive", "delete": "deleteditems", "spam": "junkemail"}.get(action)
         if not destination:

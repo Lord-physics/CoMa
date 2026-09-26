@@ -14,9 +14,15 @@ powershell -ExecutionPolicy Bypass -File .\Install-CoMa.ps1
 
 Se instala en `%LOCALAPPDATA%\Programs\CoMa` y crea un acceso directo en el menú Inicio. Queda activado el inicio automático para el usuario actual; puedes desactivarlo en la ventana. Para desinstalar, cierra CoMa y ejecuta `Uninstall-CoMa.ps1` desde la carpeta instalada. Los datos de cuentas y aprendizaje permanecen en `%LOCALAPPDATA%\CoMa` para una reinstalación.
 
+## Actualizar manualmente
+
+Descarga `CoMa-Windows.zip` desde el artefacto de la última ejecución **correcta** de [Windows en GitHub Actions](https://github.com/Lord-physics/CoMa/actions/workflows/windows.yml), extráelo, cierra CoMa y ejecuta `Install-CoMa.ps1` desde la carpeta recién extraída como se indica arriba. Sustituye la aplicación para tu usuario de Windows sin permisos de administrador. Se conservan las cuentas, el aprendizaje de spam y la configuración actual de inicio automático. Utiliza el instalador de la nueva descarga, no la copia de la carpeta instalada.
+
 ## Añadir cuentas
 
 Cada proveedor exige registrar una aplicación OAuth de escritorio. CoMa **no solicita ni almacena la contraseña del correo**. Introduce en «Añadir cuenta» el ID de esa aplicación y completa el acceso en el navegador. Puedes añadir varias cuentas, incluso varias del mismo proveedor. Los tokens de renovación se cifran con DPAPI para el usuario de Windows; los resúmenes de correo no se guardan en disco.
+
+Pulsa **Ayuda** en la ventana «Añadir cuenta» para ver los pasos de cada proveedor y conseguir los identificadores, el secreto de Google, el tenant de Microsoft y los permisos de API. El selector **Idioma** de la ventana principal permite cambiar entre español e inglés y conserva la elección para futuras sesiones.
 
 - **Gmail:** crea un proyecto en Google Cloud, habilita Gmail API, configura la pantalla de consentimiento y crea un cliente OAuth de tipo «Aplicación de escritorio». Introduce el ID y el secreto del JSON descargado. Si la aplicación está en modo de prueba, añade tu cuenta como usuario de prueba. CoMa solicita el permiso `gmail.modify` para leer, archivar, enviar a spam y mover a papelera.
 - **Outlook/Hotmail:** registra una aplicación en Microsoft Entra que admita cuentas personales y organizativas. Activa «Permitir flujos de cliente público» y concede permisos delegados `Mail.ReadWrite`, `User.Read` y `offline_access`. Introduce el ID de aplicación. CoMa mostrará un código para iniciar sesión en `microsoft.com/devicelogin`.
