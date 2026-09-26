@@ -6,7 +6,7 @@ CoMa reúne el correo no leído de la bandeja de entrada de Gmail, Outlook/Hotma
 
 ## Instalar sin administrador
 
-Descarga `CoMa-Windows.zip` desde el artefacto de la última ejecución correcta de [Windows en GitHub Actions](https://github.com/Lord-physics/CoMa/actions/workflows/windows.yml) (requiere sesión en GitHub), extráelo y ejecuta en PowerShell:
+Descarga `CoMa-Windows.zip` de la [última versión publicada en GitHub](https://github.com/Lord-physics/CoMa/releases/latest), extráelo y ejecuta en PowerShell:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\Install-CoMa.ps1
@@ -14,9 +14,15 @@ powershell -ExecutionPolicy Bypass -File .\Install-CoMa.ps1
 
 Se instala en `%LOCALAPPDATA%\Programs\CoMa` y crea un acceso directo en el menú Inicio. Queda activado el inicio automático para el usuario actual; puedes desactivarlo en la ventana. Para desinstalar, cierra CoMa y ejecuta `Uninstall-CoMa.ps1` desde la carpeta instalada. Los datos de cuentas y aprendizaje permanecen en `%LOCALAPPDATA%\CoMa` para una reinstalación.
 
-## Actualizar manualmente
+## Descargar e instalar la última versión
 
-Descarga `CoMa-Windows.zip` desde el artefacto de la última ejecución **correcta** de [Windows en GitHub Actions](https://github.com/Lord-physics/CoMa/actions/workflows/windows.yml), extráelo, cierra CoMa y ejecuta `Install-CoMa.ps1` desde la carpeta recién extraída como se indica arriba. Sustituye la aplicación para tu usuario de Windows sin permisos de administrador. Se conservan las cuentas, el aprendizaje de spam y la configuración actual de inicio automático. Utiliza el instalador de la nueva descarga, no la copia de la carpeta instalada.
+Cierra CoMa, abre PowerShell en `%LOCALAPPDATA%\Programs\CoMa` y ejecuta:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\actualizar.ps1
+```
+
+También puedes [descargar `actualizar.ps1` directamente](https://github.com/Lord-physics/CoMa/raw/refs/heads/main/actualizar.ps1) si tu versión instalada todavía no lo incluye. El archivo descarga la última versión pública de GitHub, comprueba su huella SHA-256 y ejecuta el instalador para tu usuario de Windows sin permisos de administrador. Conserva las cuentas, el aprendizaje de spam y la configuración de inicio automático. La descarga no requiere iniciar sesión en GitHub ni introducir credenciales de correo.
 
 ## Añadir cuentas
 

@@ -11,6 +11,7 @@ $releaseDir = Join-Path $root 'dist\CoMa-Windows'
 New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $root 'dist\CoMa.exe') -Destination (Join-Path $releaseDir 'CoMa.exe') -Force
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Install-CoMa.ps1') -Destination $releaseDir -Force
+Copy-Item -LiteralPath (Join-Path $root 'actualizar.ps1') -Destination $releaseDir -Force
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Uninstall-CoMa.ps1') -Destination $releaseDir -Force
 Copy-Item -LiteralPath (Join-Path $root 'README.md') -Destination $releaseDir -Force
 Copy-Item -LiteralPath (Join-Path $root 'LEEME.md') -Destination $releaseDir -Force

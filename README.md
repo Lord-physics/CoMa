@@ -6,7 +6,7 @@ CoMa brings unread messages from the Gmail, Outlook/Hotmail, and Educacyl Micros
 
 ## Install without administrator rights
 
-Download `CoMa-Windows.zip` from the artifact of the latest successful [Windows GitHub Actions run](https://github.com/Lord-physics/CoMa/actions/workflows/windows.yml) (GitHub sign-in required), extract it, and run in PowerShell:
+Download `CoMa-Windows.zip` from the [latest GitHub release](https://github.com/Lord-physics/CoMa/releases/latest), extract it, and run in PowerShell:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\Install-CoMa.ps1
@@ -14,9 +14,15 @@ powershell -ExecutionPolicy Bypass -File .\Install-CoMa.ps1
 
 CoMa installs in `%LOCALAPPDATA%\Programs\CoMa` and adds a Start menu shortcut. It starts automatically when the current user signs in; you can turn this off in the application. To uninstall, close CoMa and run `Uninstall-CoMa.ps1` from the installation folder. Account data and learning data remain in `%LOCALAPPDATA%\CoMa` so they can be reused after reinstalling.
 
-## Update manually
+## Download and install the latest version
 
-Download `CoMa-Windows.zip` from the artifact of the latest **successful** [Windows GitHub Actions run](https://github.com/Lord-physics/CoMa/actions/workflows/windows.yml), extract it, close CoMa, and run `Install-CoMa.ps1` from the newly extracted folder as shown above. This replaces the application for your Windows user without administrator rights. Your accounts, spam learning, and current automatic-start setting are kept. Use the installer from the new download, not the copy in the installed folder.
+Close CoMa, open PowerShell in `%LOCALAPPDATA%\Programs\CoMa`, and run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\actualizar.ps1
+```
+
+You can also [download `actualizar.ps1` directly](https://github.com/Lord-physics/CoMa/raw/refs/heads/main/actualizar.ps1) if your installed version does not have it yet. The script downloads the latest public release from GitHub, checks its SHA-256 digest, and runs the installer for your Windows user without administrator rights. It keeps your accounts, spam learning, and automatic-start setting. No GitHub login or email credentials are needed for the download.
 
 ## Add accounts
 

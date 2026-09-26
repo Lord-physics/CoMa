@@ -10,9 +10,13 @@ $running = @(Get-Process -Name CoMa -ErrorAction SilentlyContinue | Where-Object
 })
 if ($running.Count -gt 0) { throw 'Cierra CoMa antes de instalar o actualizar.' }
 $uninstallSource = Join-Path $PSScriptRoot 'Uninstall-CoMa.ps1'
+$updateSource = Join-Path $PSScriptRoot 'actualizar.ps1'
 New-Item -ItemType Directory -Path $installDir -Force | Out-Null
 Copy-Item -LiteralPath $sourceExe -Destination $exePath -Force
 Copy-Item -LiteralPath $uninstallSource -Destination (Join-Path $installDir 'Uninstall-CoMa.ps1') -Force
+if (Test-Path -LiteralPath $updateSource -PathType Leaf) {
+    Copy-Item -LiteralPath $updateSource -Destination (Join-Path $installDir 'actualizar.ps1') -Force
+}
 $startMenu = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
 $shortcutPath = Join-Path $startMenu 'CoMa.lnk'
 $shell = New-Object -ComObject WScript.Shell
