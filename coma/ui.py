@@ -11,7 +11,7 @@ from pathlib import Path
 from tkinter import messagebox, ttk
 
 from .account_setup import detect_provider, valid_email
-from .i18n import HELP_URLS, help_text, language, load_language, set_language, tr
+from .i18n import help_links, help_text, language, load_language, set_language, tr
 from .models import Message
 from .releases import cleanup_prepared_update, launch_update, prepare_update
 from .service import MailService
@@ -387,11 +387,17 @@ class App(tk.Tk):
         scrollbar.pack(side="right", fill="y")
         text.pack(side="left", fill="both", expand=True)
         text.insert("1.0", help_text(kind))
+        text.insert("end", "\n\n" + tr("official_links") + "\n\n")
+        def open_link(url: str):
+            if not webbrowser.open_new_tab(url):
+                messagebox.showerror(tr("help"), tr("browser_failed"), parent=help_window)
+        for label, url in help_links(kind):
+            link = ttk.Button(text, text=label, command=lambda target=url: open_link(target))
+            text.window_create("end", window=link)
+            text.insert("end", "\n\n")
         text.configure(state="disabled")
         buttons = ttk.Frame(help_window, padding=(16, 0, 16, 16))
         buttons.pack(fill="x")
-        ttk.Button(buttons, text=tr("open_instructions"),
-                   command=lambda: webbrowser.open(HELP_URLS[kind])).pack(side="left")
         def close():
             help_window.grab_release()
             help_window.destroy()
