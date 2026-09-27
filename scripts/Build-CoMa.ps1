@@ -15,17 +15,5 @@ Copy-Item -LiteralPath (Join-Path $root 'actualizar.ps1') -Destination $releaseD
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Uninstall-CoMa.ps1') -Destination $releaseDir -Force
 Copy-Item -LiteralPath (Join-Path $root 'README.md') -Destination $releaseDir -Force
 Copy-Item -LiteralPath (Join-Path $root 'LEEME.md') -Destination $releaseDir -Force
-$oauthConfig = Join-Path $root 'oauth-clients.json'
-if (Test-Path -LiteralPath $oauthConfig -PathType Leaf) {
-    $registrations = Get-Content -LiteralPath $oauthConfig -Raw | ConvertFrom-Json
-    if ($registrations.gmail.client_id -notmatch '^[A-Za-z0-9_-]+\.apps\.googleusercontent\.com$' -or
-        $registrations.microsoft.client_id -notmatch '^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$') {
-        throw 'oauth-clients.json no contiene IDs OAuth válidos para Gmail y Microsoft.'
-    }
-    Copy-Item -LiteralPath $oauthConfig -Destination $releaseDir -Force
-} else {
-    $oldConfig = Join-Path $releaseDir 'oauth-clients.json'
-    if (Test-Path -LiteralPath $oldConfig -PathType Leaf) { Remove-Item -LiteralPath $oldConfig -Force }
-}
 Compress-Archive -Path (Join-Path $releaseDir '*') -DestinationPath (Join-Path $root 'dist\CoMa-Windows.zip') -Force
 Write-Output (Join-Path $root 'dist\CoMa-Windows.zip')

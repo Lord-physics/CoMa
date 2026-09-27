@@ -107,59 +107,10 @@ def _microsoft_authorize(client_id: str, tenant: str, notify) -> dict:
     raise RemoteError(tr("microsoft_expired"))
 
 
-def _microsoft_browser_authorize(client_id: str, tenant: str, notify,
-                                 login_hint: str = "") -> dict:
-    """Use the system browser and a loopback redirect with PKCE."""
-    state = secrets.token_urlsafe(24)
-    verifier = secrets.token_urlsafe(64)
-    challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip("=")
-    received = {}
-
-    class Handler(BaseHTTPRequestHandler):
-        def do_GET(self):
-            query = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
-            if query.get("state", [""])[0] == state:
-                received["code"] = query.get("code", [""])[0]
-                received["error"] = query.get("error", [""])[0]
-            body = "<html><body>" + tr("browser_callback") + "</body></html>"
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.end_headers()
-            self.wfile.write(body.encode("utf-8"))
-
-        def log_message(self, *args):
-            pass
-
-    server = HTTPServer(("127.0.0.1", 0), Handler)
-    server.timeout = 1
-    redirect = f"http://localhost:{server.server_port}"
-    base = f"https://login.microsoftonline.com/{tenant}/oauth2/v2.0"
-    params = {"client_id": client_id, "response_type": "code", "redirect_uri": redirect,
-              "response_mode": "query", "scope": MS_SCOPE, "state": state,
-              "code_challenge": challenge, "code_challenge_method": "S256"}
-    if login_hint:
-        params["login_hint"] = login_hint
-    notify(tr("microsoft_browser"))
-    webbrowser.open(base + "/authorize?" + urllib.parse.urlencode(params))
-    deadline = time.monotonic() + 180
-    try:
-        while time.monotonic() < deadline and not received:
-            server.handle_request()
-    finally:
-        server.server_close()
-    if not received.get("code"):
-        raise RemoteError(tr("microsoft_auth_failed"))
-    return post_form(base + "/token", {"client_id": client_id, "code": received["code"],
-                     "code_verifier": verifier, "grant_type": "authorization_code",
-                     "redirect_uri": redirect, "scope": MS_SCOPE})
-
-
 def authorize(provider: str, client_id: str, tenant: str, client_secret: str, notify,
-              login_hint: str = "", browser_sign_in: bool = False) -> dict:
+              login_hint: str = "") -> dict:
     if provider == "gmail":
         return _google_authorize(client_id, client_secret, notify, login_hint)
-    if browser_sign_in:
-        return _microsoft_browser_authorize(client_id, tenant, notify, login_hint)
     return _microsoft_authorize(client_id, tenant, notify)
 
 

@@ -17,9 +17,8 @@ class MailService:
         self.classifier = classifier or SpamClassifier()
 
     def add_account(self, provider: str, client_id: str, tenant: str, client_secret: str, notify,
-                    login_hint: str = "", browser_sign_in: bool = False) -> Account:
-        credentials = authorize(provider, client_id, tenant, client_secret, notify, login_hint,
-                                browser_sign_in=browser_sign_in)
+                    login_hint: str = "") -> Account:
+        credentials = authorize(provider, client_id, tenant, client_secret, notify, login_hint)
         refresh_token = credentials.get("refresh_token")
         if not refresh_token:
             raise ValueError(tr("refresh_missing"))

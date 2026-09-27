@@ -11,10 +11,8 @@ $running = @(Get-Process -Name CoMa -ErrorAction SilentlyContinue | Where-Object
 if ($running.Count -gt 0) { throw 'Cierra CoMa antes de instalar o actualizar.' }
 $uninstallSource = Join-Path $PSScriptRoot 'Uninstall-CoMa.ps1'
 $updateSource = Join-Path $PSScriptRoot 'actualizar.ps1'
-$oauthSource = Join-Path $PSScriptRoot 'oauth-clients.json'
 New-Item -ItemType Directory -Path $installDir -Force | Out-Null
 $targets = @('CoMa.exe', 'Uninstall-CoMa.ps1', 'actualizar.ps1')
-if (Test-Path -LiteralPath $oauthSource -PathType Leaf) { $targets += 'oauth-clients.json' }
 $backups = @{}
 $previous = @{}
 $suffix = [Guid]::NewGuid().ToString('N')
@@ -34,9 +32,6 @@ try {
     Copy-Item -LiteralPath $uninstallSource -Destination (Join-Path $installDir 'Uninstall-CoMa.ps1') -Force
     if (Test-Path -LiteralPath $updateSource -PathType Leaf) {
         Copy-Item -LiteralPath $updateSource -Destination (Join-Path $installDir 'actualizar.ps1') -Force
-    }
-    if (Test-Path -LiteralPath $oauthSource -PathType Leaf) {
-        Copy-Item -LiteralPath $oauthSource -Destination (Join-Path $installDir 'oauth-clients.json') -Force
     }
     $startMenu = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
     $shortcutPath = Join-Path $startMenu 'CoMa.lnk'

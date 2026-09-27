@@ -25,13 +25,11 @@ class UpdateScriptTests(unittest.TestCase):
             (package / "CoMa.exe").write_bytes(b"new version")
             (package / "Uninstall-CoMa.ps1").write_text("# new uninstall", encoding="utf-8")
             (package / "actualizar.ps1").write_text("# new updater", encoding="utf-8")
-            (package / "oauth-clients.json").write_text('{"microsoft": "new"}', encoding="utf-8")
             installed = root / "local" / "Programs" / "CoMa"
             installed.mkdir(parents=True)
             (installed / "CoMa.exe").write_bytes(b"old version")
             (installed / "Uninstall-CoMa.ps1").write_text("# old uninstall", encoding="utf-8")
             (installed / "actualizar.ps1").write_text("# old updater", encoding="utf-8")
-            (installed / "oauth-clients.json").write_text('{"microsoft": "old"}', encoding="utf-8")
             start_menu = root / "roaming" / "Microsoft" / "Windows" / "Start Menu" / "Programs"
             start_menu.mkdir(parents=True)
             env = {**os.environ, "LOCALAPPDATA": str(root / "local"), "APPDATA": str(root / "roaming")}
@@ -43,7 +41,6 @@ class UpdateScriptTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual((installed / "CoMa.exe").read_bytes(), b"new version")
             self.assertEqual((installed / "actualizar.ps1").read_text(), "# new updater")
-            self.assertEqual((installed / "oauth-clients.json").read_text(), '{"microsoft": "new"}')
             self.assertEqual(list(installed.glob("*.backup-*")), [])
 
     def test_installer_restores_previous_executable_after_copy_failure(self):
