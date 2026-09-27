@@ -16,6 +16,8 @@ CoMa installs in `%LOCALAPPDATA%\Programs\CoMa` and adds a Start menu shortcut. 
 
 ## Download and install the latest version
 
+In CoMa, select **Download latest version** and choose where to save `CoMa-Windows.zip`. CoMa downloads the latest GitHub release in the background and checks its SHA-256 digest. Then close CoMa, extract the ZIP, and run `Install-CoMa.ps1` from PowerShell. The download button does not install or run the package.
+
 Close CoMa, open PowerShell in `%LOCALAPPDATA%\Programs\CoMa`, and run:
 
 ```powershell

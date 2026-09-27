@@ -16,6 +16,8 @@ Se instala en `%LOCALAPPDATA%\Programs\CoMa` y crea un acceso directo en el men�
 
 ## Descargar e instalar la última versión
 
+En CoMa, pulsa **Descargar última versión** y elige dónde guardar `CoMa-Windows.zip`. CoMa descarga en segundo plano la última versión de GitHub y comprueba su huella SHA-256. Después, cierra CoMa, extrae el ZIP y ejecuta `Install-CoMa.ps1` desde PowerShell. El botón solo descarga el paquete; no lo instala ni lo ejecuta.
+
 Cierra CoMa, abre PowerShell en `%LOCALAPPDATA%\Programs\CoMa` y ejecuta:
 
 ```powershell
