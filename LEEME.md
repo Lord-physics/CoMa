@@ -14,17 +14,17 @@ powershell -ExecutionPolicy Bypass -File .\Install-CoMa.ps1
 
 Se instala en `%LOCALAPPDATA%\Programs\CoMa` y crea un acceso directo en el menú Inicio. Queda activado el inicio automático para el usuario actual; puedes desactivarlo en la ventana. Para desinstalar, cierra CoMa y ejecuta `Uninstall-CoMa.ps1` desde la carpeta instalada. Los datos de cuentas y aprendizaje permanecen en `%LOCALAPPDATA%\CoMa` para una reinstalación.
 
-## Descargar e instalar la última versión
+## Actualizar CoMa
 
-En CoMa, pulsa **Descargar última versión** y elige dónde guardar `CoMa-Windows.zip`. CoMa descarga en segundo plano la última versión de GitHub y comprueba su huella SHA-256. Después, cierra CoMa, extrae el ZIP y ejecuta `Install-CoMa.ps1` desde PowerShell. El botón solo descarga el paquete; no lo instala ni lo ejecuta.
+Pulsa **Actualizar CoMa** en la ventana principal. CoMa descarga y verifica la última versión de GitHub, se cierra, la instala para tu usuario de Windows y vuelve a abrirse. Durante la actualización no tienes que elegir archivos, extraer el ZIP ni ejecutar comandos; tampoco hacen falta permisos de administrador, acceso a GitHub o credenciales del correo. Si falla la instalación, CoMa muestra el error e intenta restaurar y abrir el ejecutable anterior.
 
-Cierra CoMa, abre PowerShell en `%LOCALAPPDATA%\Programs\CoMa` y ejecuta:
+Si tu versión instalada todavía no tiene este botón, cierra CoMa, abre PowerShell en `%LOCALAPPDATA%\Programs\CoMa` y ejecuta:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\actualizar.ps1
 ```
 
-También puedes [descargar `actualizar.ps1` directamente](https://github.com/Lord-physics/CoMa/raw/refs/heads/main/actualizar.ps1) si tu versión instalada todavía no lo incluye. El archivo descarga la última versión pública de GitHub, comprueba su huella SHA-256 y ejecuta el instalador para tu usuario de Windows sin permisos de administrador. Conserva las cuentas, el aprendizaje de spam y la configuración de inicio automático. La descarga no requiere iniciar sesión en GitHub ni introducir credenciales de correo.
+También puedes [descargar `actualizar.ps1` directamente](https://github.com/Lord-physics/CoMa/raw/refs/heads/main/actualizar.ps1) si tu versión instalada todavía no lo incluye. El archivo descarga la última versión pública de GitHub, comprueba su huella SHA-256 y ejecuta el instalador para tu usuario de Windows sin permisos de administrador. La actualización conserva las cuentas, el aprendizaje de spam y la configuración de inicio automático.
 
 ## Añadir cuentas
 

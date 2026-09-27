@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from coma.releases import ReleaseError, download_latest
+from coma.releases import ReleaseError, cleanup_prepared_update, download_latest, launch_update, prepare_update
 
 
 class ReleaseDownloadTests(unittest.TestCase):
@@ -50,6 +50,30 @@ class ReleaseDownloadTests(unittest.TestCase):
                 with self.assertRaises(ReleaseError):
                     download_latest(Path(directory) / "CoMa-Windows.zip")
             self.assertEqual(request.call_count, 1)
+
+    def test_prepared_update_is_verified_and_cleaned_up(self):
+        content = b"verified update"
+        with tempfile.TemporaryDirectory() as directory:
+            with patch("coma.releases.tempfile.gettempdir", return_value=directory), patch(
+                "coma.releases.urllib.request.urlopen",
+                side_effect=[io.BytesIO(self._release(content)), io.BytesIO(content)],
+            ):
+                tag, package, digest = prepare_update()
+                self.assertEqual(tag, "v0.1.0")
+                self.assertEqual(package.read_bytes(), content)
+                self.assertEqual(digest, hashlib.sha256(content).hexdigest())
+                cleanup_prepared_update(package)
+                self.assertFalse(package.parent.exists())
+
+    @patch("coma.releases.subprocess.Popen")
+    def test_launch_update_waits_for_current_process(self, popen):
+        package = Path(tempfile.gettempdir()) / "CoMa-update-" / "CoMa-Windows.zip"
+        launch_update(package, "a" * 64, 1234)
+        command = popen.call_args.args[0]
+        self.assertEqual(command[0], "powershell.exe")
+        self.assertEqual(command[command.index("-WaitForProcessId") + 1], "1234")
+        self.assertEqual(command[command.index("-PackagePath") + 1], str(package))
+        self.assertIn("-FromApp", command)
 
 
 if __name__ == "__main__":

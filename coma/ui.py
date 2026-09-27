@@ -1,18 +1,19 @@
 """Ventana Tk; toda red y clasificación se ejecutan fuera del hilo gráfico."""
 
 import base64
+import os
 import queue
 import sys
 import threading
 import tkinter as tk
 import webbrowser
 from pathlib import Path
-from tkinter import filedialog, messagebox, ttk
+from tkinter import messagebox, ttk
 
 from .account_setup import detect_provider, valid_email
 from .i18n import HELP_URLS, help_text, language, load_language, set_language, tr
 from .models import Message
-from .releases import ASSET_NAME, download_latest
+from .releases import cleanup_prepared_update, launch_update, prepare_update
 from .service import MailService
 from .startup import enabled as startup_enabled, set_enabled as set_startup
 
@@ -49,7 +50,7 @@ class App(tk.Tk):
         self.configure(bg=COLORS["background"])
         self.events = queue.Queue()
         self.busy = False
-        self.download_busy = False
+        self.update_busy = False
         self.messages: list[Message] = []
         self.candidates: list[Message] = []
         self.candidate_window = None
@@ -84,10 +85,10 @@ class App(tk.Tk):
         self.start_var = tk.BooleanVar(value=startup_enabled())
         ttk.Checkbutton(controls, text=tr("autostart"), variable=self.start_var,
                         command=self._toggle_startup).pack(side="left")
-        self.download_button = ttk.Button(controls, text=tr("download_version"), command=self._download_version)
-        self.download_button.pack(side="left", padx=(16, 0))
-        if self.download_busy:
-            self.download_button.state(["disabled"])
+        self.update_button = ttk.Button(controls, text=tr("update_now"), command=self._update_now)
+        self.update_button.pack(side="left", padx=(16, 0))
+        if self.update_busy:
+            self.update_button.state(["disabled"])
         self.count_var = tk.StringVar(value=tr("no_messages_loaded"))
         tk.Label(controls, textvariable=self.count_var, bg=COLORS["background"], fg=COLORS["muted"]).pack(side="right")
         self.language_choice = tk.StringVar(value="English" if language() == "en" else "Español")
@@ -145,24 +146,19 @@ class App(tk.Tk):
             self.start_var.set(startup_enabled())
             messagebox.showerror(tr("autostart_title"), str(exc), parent=self)
 
-    def _download_version(self):
-        if self.download_busy:
+    def _update_now(self):
+        if self.update_busy:
             return
-        path = filedialog.asksaveasfilename(parent=self, title=tr("download_version"),
-                                            initialfile=ASSET_NAME, defaultextension=".zip",
-                                            filetypes=[(tr("zip_files"), "*.zip")])
-        if not path:
-            return
-        self.download_busy = True
-        self.download_button.state(["disabled"])
+        self.update_busy = True
+        self.update_button.state(["disabled"])
         self.status_var.set(tr("release_downloading"))
 
         def worker():
             try:
-                tag = download_latest(Path(path))
-                self.events.put(("release_done", tag, path))
+                tag, package, digest = prepare_update()
+                self.events.put(("update_ready", tag, package, digest))
             except Exception as exc:
-                self.events.put(("release_error", str(exc)))
+                self.events.put(("update_error", str(exc)))
 
         threading.Thread(target=worker, daemon=True).start()
 
@@ -190,17 +186,25 @@ class App(tk.Tk):
                 break
             if event[0] == "status":
                 self.status_var.set(event[1])
-            elif event[0] == "release_done":
-                self.download_busy = False
-                self.download_button.state(["!disabled"])
-                self.status_var.set(tr("release_downloaded", version=event[1]))
-                messagebox.showinfo(tr("download_version"),
-                                    tr("release_install_help", path=event[2]), parent=self)
-            elif event[0] == "release_error":
-                self.download_busy = False
-                self.download_button.state(["!disabled"])
+            elif event[0] == "update_ready":
+                try:
+                    launch_update(event[2], event[3], os.getpid())
+                except Exception as exc:
+                    cleanup_prepared_update(event[2])
+                    self.update_busy = False
+                    self.update_button.state(["!disabled"])
+                    self.status_var.set(tr("update_launch_failed"))
+                    messagebox.showerror(tr("update_now"), str(exc), parent=self)
+                else:
+                    self.status_var.set(tr("update_installing", version=event[1]))
+                    self.update_idletasks()
+                    self.destroy()
+                    return
+            elif event[0] == "update_error":
+                self.update_busy = False
+                self.update_button.state(["!disabled"])
                 self.status_var.set(tr("release_download_failed"))
-                messagebox.showerror(tr("download_version"), event[1], parent=self)
+                messagebox.showerror(tr("update_now"), event[1], parent=self)
             elif event[0] == "error":
                 self.busy = False
                 self.status_var.set(tr("operation_failed"))

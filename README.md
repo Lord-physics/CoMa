@@ -14,17 +14,17 @@ powershell -ExecutionPolicy Bypass -File .\Install-CoMa.ps1
 
 CoMa installs in `%LOCALAPPDATA%\Programs\CoMa` and adds a Start menu shortcut. It starts automatically when the current user signs in; you can turn this off in the application. To uninstall, close CoMa and run `Uninstall-CoMa.ps1` from the installation folder. Account data and learning data remain in `%LOCALAPPDATA%\CoMa` so they can be reused after reinstalling.
 
-## Download and install the latest version
+## Update CoMa
 
-In CoMa, select **Download latest version** and choose where to save `CoMa-Windows.zip`. CoMa downloads the latest GitHub release in the background and checks its SHA-256 digest. Then close CoMa, extract the ZIP, and run `Install-CoMa.ps1` from PowerShell. The download button does not install or run the package.
+Select **Update CoMa** in the main window. CoMa downloads and verifies the latest GitHub release, closes itself, installs it for the current Windows user, and reopens. No file selection, extraction, command, administrator rights, GitHub login, or email credentials are needed during the update. If installation fails, CoMa reports the error and attempts to restore and reopen the previous executable.
 
-Close CoMa, open PowerShell in `%LOCALAPPDATA%\Programs\CoMa`, and run:
+For an older installed version without this button, close CoMa, open PowerShell in `%LOCALAPPDATA%\Programs\CoMa`, and run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\actualizar.ps1
 ```
 
-You can also [download `actualizar.ps1` directly](https://github.com/Lord-physics/CoMa/raw/refs/heads/main/actualizar.ps1) if your installed version does not have it yet. The script downloads the latest public release from GitHub, checks its SHA-256 digest, and runs the installer for your Windows user without administrator rights. It keeps your accounts, spam learning, and automatic-start setting. No GitHub login or email credentials are needed for the download.
+You can also [download `actualizar.ps1` directly](https://github.com/Lord-physics/CoMa/raw/refs/heads/main/actualizar.ps1) if your installed version does not have it yet. The script downloads the latest public release from GitHub, checks its SHA-256 digest, and runs the installer for your Windows user without administrator rights. Updating keeps your accounts, spam learning, and automatic-start setting.
 
 ## Add accounts
 

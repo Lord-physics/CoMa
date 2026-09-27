@@ -4,7 +4,11 @@ import hashlib
 import json
 import os
 import re
+import shutil
+import subprocess
+import sys
 import tempfile
+import uuid
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -88,3 +92,43 @@ def download_latest(destination: Path) -> str:
     finally:
         if temporary is not None:
             Path(temporary).unlink(missing_ok=True)
+
+
+def cleanup_prepared_update(package: Path) -> None:
+    """Borra únicamente un directorio temporal creado para CoMa."""
+    folder = Path(package).resolve().parent
+    temp_root = Path(tempfile.gettempdir()).resolve()
+    if folder.parent == temp_root and re.fullmatch(r"CoMa-update-[0-9a-f]{32}", folder.name):
+        shutil.rmtree(folder, ignore_errors=True)
+
+
+def prepare_update() -> tuple[str, Path, str]:
+    """Descarga el paquete y entrega su hash al proceso instalador."""
+    folder = Path(tempfile.gettempdir()) / ("CoMa-update-" + uuid.uuid4().hex)
+    folder.mkdir()
+    package = folder / ASSET_NAME
+    try:
+        tag = download_latest(package)
+        with package.open("rb") as stream:
+            digest = hashlib.file_digest(stream, "sha256").hexdigest()
+        return tag, package, digest
+    except Exception:
+        cleanup_prepared_update(package)
+        raise
+
+
+def launch_update(package: Path, digest: str, process_id: int) -> None:
+    """Inicia PowerShell sin elevación; la UI puede cerrarse al regresar."""
+    script = (Path(sys.executable).resolve().with_name("actualizar.ps1") if getattr(sys, "frozen", False)
+              else Path(__file__).resolve().parent.parent / "actualizar.ps1")
+    if not script.is_file():
+        raise ReleaseError(tr("update_script_missing"))
+    try:
+        subprocess.Popen(
+            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script),
+             "-PackagePath", str(package), "-ExpectedHash", digest,
+             "-WaitForProcessId", str(process_id), "-FromApp"],
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    except OSError as exc:
+        raise ReleaseError(tr("update_launch_failed")) from exc
