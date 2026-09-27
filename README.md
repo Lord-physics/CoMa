@@ -30,6 +30,8 @@ You can also [download `actualizar.ps1` directly](https://github.com/Lord-physic
 
 Each provider requires an OAuth desktop application registration. CoMa **does not request or store your email password**. Enter the application's client ID under “Añadir cuenta” and complete authorization in your browser. You can add multiple accounts, including several from the same provider. Refresh tokens are encrypted with Windows DPAPI for the current user; message summaries are not stored on disk.
 
+Enter the email address first. CoMa recognizes Gmail, Outlook/Hotmail, and `@educa.jcyl.es` addresses; choose the provider manually for other domains. After the first account of a provider is connected, CoMa fills in the same OAuth app details for subsequent accounts. Your password and any second factor are entered only on the provider's official sign-in page. Gmail receives your address as a sign-in hint; Microsoft's device-code page may ask you to enter it again. The first connection still needs a Google or Microsoft OAuth app registration.
+
 Select **Help** in the Add account window for provider-specific steps to obtain the required IDs, Google client secret, Microsoft tenant, and API permissions. Use the **Language** selector in the main window to switch between English and Spanish; the choice is saved for later sessions.
 
 - **Gmail:** create a Google Cloud project, enable the Gmail API, configure the consent screen, and create a Desktop app OAuth client. Enter the client ID and client secret from the downloaded JSON file. If the app is in testing mode, add your account as a test user. CoMa requests `gmail.modify` to read, archive, mark as spam, and move messages to Trash.

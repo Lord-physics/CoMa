@@ -30,6 +30,8 @@ También puedes [descargar `actualizar.ps1` directamente](https://github.com/Lor
 
 Cada proveedor exige registrar una aplicación OAuth de escritorio. CoMa **no solicita ni almacena la contraseña del correo**. Introduce en «Añadir cuenta» el ID de esa aplicación y completa el acceso en el navegador. Puedes añadir varias cuentas, incluso varias del mismo proveedor. Los tokens de renovación se cifran con DPAPI para el usuario de Windows; los resúmenes de correo no se guardan en disco.
 
+Introduce primero tu dirección de correo. CoMa reconoce Gmail, Outlook/Hotmail y `@educa.jcyl.es`; para otros dominios, elige el proveedor manualmente. Tras conectar la primera cuenta de un proveedor, CoMa rellena los datos de la misma aplicación OAuth al añadir más cuentas. La contraseña y el segundo factor se introducen solo en la página oficial del proveedor. Gmail recibe el correo como sugerencia de acceso; la página del código de Microsoft puede pedirlo de nuevo. La primera conexión sigue requiriendo registrar una aplicación OAuth de Google o Microsoft.
+
 Pulsa **Ayuda** en la ventana «Añadir cuenta» para ver los pasos de cada proveedor y conseguir los identificadores, el secreto de Google, el tenant de Microsoft y los permisos de API. El selector **Idioma** de la ventana principal permite cambiar entre español e inglés y conserva la elección para futuras sesiones.
 
 - **Gmail:** crea un proyecto en Google Cloud, habilita Gmail API, configura la pantalla de consentimiento y crea un cliente OAuth de tipo «Aplicación de escritorio». Introduce el ID y el secreto del JSON descargado. Si la aplicación está en modo de prueba, añade tu cuenta como usuario de prueba. CoMa solicita el permiso `gmail.modify` para leer, archivar, enviar a spam y mover a papelera.

@@ -19,7 +19,7 @@ GOOGLE_SCOPE = "https://www.googleapis.com/auth/gmail.modify"
 MS_SCOPE = "offline_access User.Read Mail.ReadWrite"
 
 
-def _google_authorize(client_id: str, client_secret: str, notify) -> dict:
+def _google_authorize(client_id: str, client_secret: str, notify, login_hint: str = "") -> dict:
     state = secrets.token_urlsafe(24)
     verifier = secrets.token_urlsafe(64)
     challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip("=")
@@ -54,6 +54,8 @@ def _google_authorize(client_id: str, client_secret: str, notify) -> dict:
         "code_challenge_method": "S256",
         "state": state,
     }
+    if login_hint:
+        params["login_hint"] = login_hint
     url = "https://accounts.google.com/o/oauth2/v2/auth?" + urllib.parse.urlencode(params)
     notify(tr("google_browser"))
     webbrowser.open(url)
@@ -105,9 +107,10 @@ def _microsoft_authorize(client_id: str, tenant: str, notify) -> dict:
     raise RemoteError(tr("microsoft_expired"))
 
 
-def authorize(provider: str, client_id: str, tenant: str, client_secret: str, notify) -> dict:
+def authorize(provider: str, client_id: str, tenant: str, client_secret: str, notify,
+              login_hint: str = "") -> dict:
     if provider == "gmail":
-        return _google_authorize(client_id, client_secret, notify)
+        return _google_authorize(client_id, client_secret, notify, login_hint)
     return _microsoft_authorize(client_id, tenant, notify)
 
 
