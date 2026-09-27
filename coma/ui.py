@@ -13,6 +13,7 @@ from tkinter import messagebox, ttk
 from .account_setup import detect_provider, valid_email
 from .i18n import HELP_URLS, help_text, language, load_language, set_language, tr
 from .models import Message
+from .oauth_clients import OAuthClient, bundled_client
 from .releases import cleanup_prepared_update, launch_update, prepare_update
 from .service import MailService
 from .startup import enabled as startup_enabled, set_enabled as set_startup
@@ -278,7 +279,7 @@ class App(tk.Tk):
     def _add_dialog(self):
         dialog = tk.Toplevel(self)
         dialog.title(tr("add_account"))
-        dialog.geometry("570x365")
+        dialog.geometry("570x265")
         dialog.transient(self)
         dialog.grab_set()
         frame = ttk.Frame(dialog, padding=18)
@@ -287,24 +288,40 @@ class App(tk.Tk):
         ttk.Label(frame, text=tr("email_address")).grid(row=0, column=0, sticky="w", pady=5)
         email = tk.StringVar()
         ttk.Entry(frame, textvariable=email, width=42).grid(row=0, column=1, sticky="ew")
-        ttk.Label(frame, text=tr("provider")).grid(row=1, column=0, sticky="w", pady=5)
+        provider_label = ttk.Label(frame, text=tr("provider"))
+        provider_label.grid(row=1, column=0, sticky="w", pady=5)
         auto_provider = tr("auto_provider")
         provider = tk.StringVar(value=auto_provider)
         picker = ttk.Combobox(frame, textvariable=provider, values=(auto_provider, *PROVIDERS),
                               state="readonly", width=39)
         picker.grid(row=1, column=1, sticky="ew")
-        ttk.Label(frame, text=tr("client_id")).grid(row=2, column=0, sticky="w", pady=5)
+        client_label = ttk.Label(frame, text=tr("client_id"))
+        client_label.grid(row=2, column=0, sticky="w", pady=5)
         client_id = ttk.Entry(frame, width=42)
         client_id.grid(row=2, column=1, sticky="ew")
-        ttk.Label(frame, text=tr("google_secret")).grid(row=3, column=0, sticky="w", pady=5)
+        secret_label = ttk.Label(frame, text=tr("google_secret"))
+        secret_label.grid(row=3, column=0, sticky="w", pady=5)
         secret = ttk.Entry(frame, show="•")
         secret.grid(row=3, column=1, sticky="ew")
-        ttk.Label(frame, text=tr("microsoft_tenant")).grid(row=4, column=0, sticky="w", pady=5)
+        tenant_label = ttk.Label(frame, text=tr("microsoft_tenant"))
+        tenant_label.grid(row=4, column=0, sticky="w", pady=5)
         tenant = ttk.Entry(frame)
         tenant.insert(0, "common")
         tenant.grid(row=4, column=1, sticky="ew")
         accounts = self.service.accounts.list()
         manual_provider = False
+        advanced = False
+        for widget in (provider_label, picker, client_label, client_id,
+                       secret_label, secret, tenant_label, tenant):
+            widget.grid_remove()
+
+        def show_advanced():
+            nonlocal advanced
+            advanced = True
+            for widget in (provider_label, picker, client_label, client_id,
+                           secret_label, secret, tenant_label, tenant):
+                widget.grid()
+            dialog.geometry("570x390")
 
         def change_provider(*_):
             kind = PROVIDERS.get(provider.get())
@@ -341,16 +358,23 @@ class App(tk.Tk):
             if not valid_email(address):
                 messagebox.showerror(tr("add_account"), tr("invalid_email"), parent=dialog)
                 return
-            kind = PROVIDERS.get(provider.get())
+            kind = PROVIDERS.get(provider.get()) if advanced else detect_provider(address)
             if not kind:
-                messagebox.showerror(tr("add_account"), tr("choose_provider"), parent=dialog)
+                messagebox.showerror(tr("add_account"),
+                                     tr("choose_provider" if advanced else "unknown_provider"), parent=dialog)
                 return
-            cid = client_id.get().strip()
+            saved = next((account for account in accounts if account.provider == kind), None)
+            registration = bundled_client(kind) if not advanced else None
+            if not registration and saved and not advanced:
+                registration = OAuthClient(saved.client_id, saved.tenant, saved.client_secret)
+            cid = client_id.get().strip() if advanced else (registration.client_id if registration else "")
             if not cid:
-                messagebox.showerror(tr("add_account"), tr("missing_client_id"), parent=dialog)
+                messagebox.showerror(tr("add_account"),
+                                     tr("missing_client_id" if advanced else "missing_publisher_client"), parent=dialog)
                 return
-            secret_value = secret.get()
-            tenancy = tenant.get().strip() if kind != "gmail" else "common"
+            secret_value = secret.get() if advanced else registration.client_secret
+            tenancy = "common" if kind == "gmail" else (
+                tenant.get().strip() if advanced else registration.tenant)
             if kind != "gmail" and (not tenancy or "/" in tenancy):
                 messagebox.showerror(tr("add_account"), tr("invalid_tenant"), parent=dialog)
                 return
@@ -360,16 +384,18 @@ class App(tk.Tk):
             dialog.grab_release()
             dialog.destroy()
             self._run(lambda: self.service.add_account(kind, cid, tenancy, secret_value,
-                            lambda text: self.events.put(("status", text)), login_hint=address),
+                            lambda text: self.events.put(("status", text)), login_hint=address,
+                            browser_sign_in=not advanced),
                       lambda account: self._added(account), status=tr("authorizing"))
         def open_help():
-            kind = PROVIDERS.get(provider.get())
+            kind = PROVIDERS.get(provider.get()) if advanced else detect_provider(email.get().strip())
             if kind:
                 self._account_help(dialog, kind, provider.get())
             else:
                 messagebox.showinfo(tr("add_account"), tr("choose_provider"), parent=dialog)
-        ttk.Button(frame, text=tr("help"), command=open_help).grid(row=6, column=0, sticky="w")
-        ttk.Button(frame, text=tr("connect"), command=submit, style="Accent.TButton").grid(row=6, column=1, sticky="e")
+        ttk.Button(frame, text=tr("advanced_setup"), command=show_advanced).grid(row=6, column=0, columnspan=2, sticky="w")
+        ttk.Button(frame, text=tr("help"), command=open_help).grid(row=7, column=0, sticky="w")
+        ttk.Button(frame, text=tr("connect"), command=submit, style="Accent.TButton").grid(row=7, column=1, sticky="e")
 
     def _account_help(self, parent, kind: str, provider_name: str):
         help_window = tk.Toplevel(parent)
