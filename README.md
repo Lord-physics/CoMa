@@ -2,6 +2,10 @@
 
 [Leer en español](LEEME.md)
 
+## CoMa is looking for someone to continue the project
+
+CoMa will be handed over to a person or team willing to continue its development and maintenance. If you would like to take over the project, [open a GitHub issue](https://github.com/Lord-physics/CoMa/issues/new) to coordinate the handover with its author.
+
 CoMa brings unread messages from the Gmail, Outlook/Hotmail, and Educacyl Microsoft 365 inboxes into one Windows window. It summarizes message text locally and flags possible spam based on the user's corrections. Predictions never move or delete messages on their own.
 
 ## Install without administrator rights

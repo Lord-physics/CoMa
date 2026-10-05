@@ -2,6 +2,10 @@
 
 [Read in English](README.md)
 
+## CoMa busca quien continúe el proyecto
+
+CoMa será cedido a la persona o al equipo que quiera continuar su desarrollo y mantenimiento. Si te interesa asumir el proyecto, [abre una incidencia en GitHub](https://github.com/Lord-physics/CoMa/issues/new) para coordinar el relevo con su autor.
+
 CoMa reúne el correo no leído de la bandeja de entrada de Gmail, Outlook/Hotmail y cuentas Educacyl de Microsoft 365 en una ventana de Windows. Resume el texto localmente y señala mensajes que podrían ser spam según las correcciones del usuario. Las predicciones nunca mueven ni borran mensajes por sí solas.
 
 ## Instalar sin administrador
